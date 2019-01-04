@@ -1,7 +1,5 @@
 import numpy as np
-from model.ranking.BPR import BPR
-from model.ranking.AOBPR import AOBPR
-from model.ranking.DNSBPR import DNSBPR
+from model.BPR import BPR
 import random
 import tensorflow as tf
 from data.DataSplitter import GivenRatioDataSplitter
@@ -9,6 +7,7 @@ from data.DataSplitter import GivenRatioDataSplitter
 np.random.seed(2018)
 random.seed(2018)
 tf.random.set_random_seed(2018)
+
 
 if __name__ == "__main__":
     config = tf.ConfigProto()
@@ -20,5 +19,5 @@ if __name__ == "__main__":
 
     splitter = GivenRatioDataSplitter(sep="\t", data_format="UIRT")
     dataset = splitter.load_data(r"dataset/ml100k.all")
-    bpr = DNSBPR(sess, dataset)
-    bpr.training()
+    model = BPR(sess, dataset)
+    model.train_model()

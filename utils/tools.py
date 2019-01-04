@@ -18,7 +18,6 @@ def random_choice(a, size=None, replace=True, p=None, exclusion=None):
     if exclusion is not None:
         if p is None:
             p = np.ones_like(a)
-            #p /= np.sum(p)
         else:
             p = np.array(p, copy=True)
         p = np.ndarray.flatten(p)
@@ -26,3 +25,15 @@ def random_choice(a, size=None, replace=True, p=None, exclusion=None):
         p = p / np.sum(p)
     sample = np.random.choice(a, size=size, replace=replace, p=p)
     return sample
+
+
+def csr_to_dict(sparse_matrix_data):
+    """convert a scipy.sparse.csr_matrix to a dict,
+    where the key is row number, and value is the
+    non-empty index in each row.
+    """
+    idx_value_dict = {}
+    for idx, value in enumerate(sparse_matrix_data):
+        if any(value.indices):
+            idx_value_dict[idx] = value.indices
+    return idx_value_dict

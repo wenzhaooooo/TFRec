@@ -8,6 +8,7 @@ cdef extern from "c_tools.h":
     void c_top_k_array_index(float **ratings, int rating_len, int rows_num,
                              int top_k, int thread_num, int **results)
 
+# TODO rename function and file
 cdef extern from "c_evaluate.h":
     void c_evaluate(int test_num,
                     int **ranks, int rank_len,
@@ -16,8 +17,6 @@ cdef extern from "c_evaluate.h":
 
 def apt_evaluate(ratings, test_items, rank_len = 50, thread_num = None):
     metrics_num = 6
-    if (not isinstance(ratings, np.ndarray)) and (ratings.dtype != np.float32):
-        ratings = np.array(ratings, dtype=np.float32)
     tests_num, rating_len = np.shape(ratings)
     if tests_num != len(test_items):
         raise Exception("The lengths of 'ranks' and 'test_items' are different.")
@@ -41,12 +40,8 @@ def apt_evaluate(ratings, test_items, rank_len = 50, thread_num = None):
     test_items_pt = <int **> PyMem_Malloc(tests_num * sizeof(int *))
     test_num_pt = <int *> PyMem_Malloc(tests_num * sizeof(int))
     for u in range(tests_num):
-        if (not isinstance(test_items[u], np.ndarray)) and (test_items[u].dtype != np.intc):
-            tmp_test_items = np.array(test_items[u], dtype=np.intc)
-        else:
-            tmp_test_items = test_items[u]
-        test_items_pt[u] = <int *>np.PyArray_DATA(tmp_test_items)
-        test_num_pt[u] = len(tmp_test_items)
+        test_items_pt[u] = <int *>np.PyArray_DATA(test_items[u])
+        test_num_pt[u] = len(test_items[u])
 
     #evaluate results
     results = np.zeros([metrics_num*rank_len], dtype=np.float32)

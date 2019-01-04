@@ -1,34 +1,20 @@
-from evaluation.ranking.evaluate import evaluate_model
-from evaluation.ranking.evaluate import evaluate_loo
+from evaluation.src.core.evaluate import evaluate_loo
+from evaluation.src.AbstractEvaluator import AbstractEvaluator
 import numpy as np
 from data.DataLoader import get_data_loader
 
 
-class Evaluator(object):
-    """Basic class for evaluator.
-    """
-    def __init__(self):
-        pass
-
-    def print_metrics(self):
-        raise NotImplementedError
-
-    def evaluate(self, ranking_score):
-        raise NotImplementedError
-
-
-class LeaveOneOutNEvaluator(Evaluator):
+class LeaveOneOutEvaluator(AbstractEvaluator):
     """Evaluator for leave one item test set.
     valid_matrix, test_matrix and test_negative are the sparse matrix of scipy.sparse
     """
-    def __init__(self, valid_matrix, test_matrix, test_negative):
-        super(LeaveOneOutNEvaluator, self).__init__()
+    def __init__(self, train_matrix, valid_matrix, test_matrix, test_negative=None):
+        # TODO add non-test_negative
+        super(LeaveOneOutEvaluator, self).__init__()
         self.user_num = test_negative.shape[0]
         self.negative_num = test_negative.getrow(0).nnz
-        users = []
-        neg_items = []
-        valid_item = []
-        test_item = []
+        users, neg_items, valid_item, test_item = [], [], [], []
+
         for u in range(self.user_num):
             n_i = test_negative.getrow(u).indices
             users.extend([u]*len(n_i))
@@ -71,44 +57,11 @@ class LeaveOneOutNEvaluator(Evaluator):
         test_ratings = np.array(np.hstack([negative_ratings, test_ratings]), copy=True)
 
         valid_result = evaluate_loo(valid_ratings, self.test_item)
-        valid_result = np.reshape(valid_result, [2, -1])[:, np.arange(4, 50, 5)]
+        valid_result = valid_result[:, np.arange(4, 50, 5)]
         valid_result = np.ndarray.flatten(valid_result)
 
         test_result = evaluate_loo(test_ratings, self.test_item)
-        test_result = np.reshape(test_result, [2, -1])[:, np.arange(4, 50, 5)]
+        test_result = test_result[:, np.arange(4, 50, 5)]
         test_result = np.ndarray.flatten(test_result)
 
-        return valid_result, test_result
-
-
-class RatioEvaluator(Evaluator):
-    """Evaluator for generic ranking task.
-    """
-    def __init__(self, train_matrix, valid_matrix, test_matrix):
-        super(RatioEvaluator, self).__init__()
-        users_num = train_matrix.shape[0]
-        self.user_pos_train = {}
-        self.user_pos_test = {}
-        self.user_pos_valid = {}
-        for u in range(users_num):
-            self.user_pos_train[u] = train_matrix.getrow(u).indices.astype(np.intc)
-            self.user_pos_test[u] = test_matrix.getrow(u).indices.astype(np.intc)
-            self.user_pos_valid[u] = valid_matrix.getrow(u).indices.astype(np.intc)
-
-    def print_metrics(self):
-        """In NDCG, 'TOP' denotes that its idcg is calculated by the ranking of top-n items,
-        'ALL' denotes that its idcg is calculated by the ranking of all positive items
-        """
-        print("Precision@5:5:50, Recall@5:5:50, MAP@5:5:50, NDCG_TOP@5:5:50, NDCG_ALL@5:5:50, MRR@5:5:50")
-
-    def evaluate(self, model):
-        ranking_score = model.get_ratings_matrix()
-
-        valid_result = evaluate_model(ranking_score, self.user_pos_train, self.user_pos_valid)
-        valid_result = np.reshape(valid_result, [6, -1])[:, np.arange(4, 50, 5)]
-        valid_result = np.ndarray.flatten(valid_result)
-
-        test_result = evaluate_model(ranking_score, self.user_pos_train, self.user_pos_test)
-        test_result = np.reshape(test_result, [6, -1])[:, np.arange(4, 50, 5)]
-        test_result = np.ndarray.flatten(test_result)
         return valid_result, test_result

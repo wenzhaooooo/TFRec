@@ -37,11 +37,7 @@ def apt_evaluate_loo(ratings, test_items, rank_len = 50, thread_num = None):
     c_top_k_array_index(ratings_pt, rating_len, tests_num, rank_len, thread_num, ranks_pt)
 
     # ground truth pointer, the length array of ground truth pointer
-    if (not isinstance(test_items, np.ndarray)) and (test_items.dtype != np.intc):
-        tmp_test_items = np.array(test_items, dtype=np.intc)
-    else:
-        tmp_test_items = test_items
-    test_items_pt = <int *>np.PyArray_DATA(tmp_test_items)
+    test_items_pt = <int *>np.PyArray_DATA(test_items)
 
     #evaluate results
 

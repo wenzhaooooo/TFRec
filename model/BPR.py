@@ -1,21 +1,21 @@
 from model.AbstractRecommender import AbstractRecommender
-from model.ranking.MatrixFactorization import MatrixFactorization
+from model.MatrixFactorization import MatrixFactorization
 import numpy as np
 import tensorflow as tf
 from utils.tools import random_choice
-from model.ranking.losses import log_loss
+from model.losses import log_loss
 from data.DataLoader import get_data_loader
 import configparser
-from evaluation.ranking.Evaluator import RatioEvaluator
+from evaluation.Evaluator import FoldOutEvaluator
 
 
-class DNSBPR(AbstractRecommender):
+class BPR(AbstractRecommender):
     def __init__(self, sess, dataset):
-        super(DNSBPR, self).__init__()
+        super(BPR, self).__init__()
         config = configparser.ConfigParser()
-        config.read("conf/ranking/DNSBPR.ini")
+        config.read("conf/BPR.ini")
         self.conf = dict(config.items("hyperparameters"))
-        print("DNSBPR arguments: %s " % self.conf)
+        print("BPR arguments: %s " % (self.conf))
         train_matrix = dataset.train_matrix
         valid_matrix = dataset.valid_matrix
         test_matrix = dataset.test_matrix
@@ -27,20 +27,20 @@ class DNSBPR(AbstractRecommender):
         self.reg = float(self.conf["reg"])
         self.epochs = int(self.conf["epochs"])
         self.batch_size = int(self.conf["batch_size"])
-        self.sample_num = int(self.conf["sample_num"])
         self.user_pos_train = {}
         self.user_pos_test = {}
         for u in range(self.users_num):
             self.user_pos_train[u] = train_matrix.getrow(u).indices
             self.user_pos_test[u] = test_matrix.getrow(u).indices
         self.all_items = np.arange(self.items_num)
-        self.evaluator = RatioEvaluator(train_matrix, valid_matrix, test_matrix)
+        self.evaluator = FoldOutEvaluator(train_matrix, valid_matrix, test_matrix)
 
         self.mf = MatrixFactorization(self.users_num, self.items_num, self.factors_num, name=self.__class__.__name__)
         self._build_model()
         self.sess = sess
         self.sess.run(tf.global_variables_initializer())
 
+    # TODO rename function name.
     def _build_model(self):
         self.user_h = tf.placeholder(tf.int32, name="user")
         self.pos_item_h = tf.placeholder(tf.int32, name="pos_item")
@@ -62,18 +62,7 @@ class DNSBPR(AbstractRecommender):
         neg_items = []
         for u, pos in self.user_pos_train.items():
             pos_len = len(pos)
-            feed = {self.user_h: [u]}
-            logits = self.sess.run(self.all_logits, feed_dict=feed)
-            logits = np.reshape(logits, newshape=[-1])
-
-            neg_pool = random_choice(self.all_items, size=self.sample_num*pos_len, exclusion=pos)
-
-            neg_logits = logits[neg_pool]
-
-            neg_pool = np.reshape(neg_pool, newshape=[pos_len, self.sample_num])
-            neg_logits = np.reshape(neg_logits, newshape=[pos_len, self.sample_num])
-
-            neg = neg_pool[np.arange(pos_len), np.argmax(neg_logits, axis=1)]
+            neg = random_choice(self.all_items, size=pos_len, exclusion=pos)
 
             users += [u]*pos_len
             pos_items += pos.tolist()
@@ -81,7 +70,7 @@ class DNSBPR(AbstractRecommender):
 
         return get_data_loader(users, pos_items, neg_items, batch_size=self.batch_size, shuffle=True)
 
-    def training(self):
+    def train_model(self):
         self.evaluator.print_metrics()
         for epoch in range(self.epochs):
             train_data = self.get_training_data()
