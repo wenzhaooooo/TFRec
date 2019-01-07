@@ -1,6 +1,7 @@
 from evaluation.src.core.evaluate import evaluate_loo
 from evaluation.src.AbstractEvaluator import AbstractEvaluator
 import numpy as np
+from utils.tools import csr_to_user_dict, csr_to_user_item_pair
 from data.DataLoader import get_data_loader
 
 
@@ -11,27 +12,46 @@ class LeaveOneOutEvaluator(AbstractEvaluator):
     def __init__(self, train_matrix, valid_matrix, test_matrix, test_negative=None):
         # TODO add non-test_negative
         super(LeaveOneOutEvaluator, self).__init__()
-        self.user_num = test_negative.shape[0]
-        self.negative_num = test_negative.getrow(0).nnz
-        users, neg_items, valid_item, test_item = [], [], [], []
+        if valid_matrix.shape[0] != valid_matrix.nnz:
+            # TODO valid item number os not equal to user number
+            raise ValueError("valid item number os not equal to user number")
+        if test_matrix.shape[0] != test_matrix.nnz:
+            # TODO test item number os not equal to user number
+            raise ValueError("test item number os not equal to user number")
 
-        for u in range(self.user_num):
-            n_i = test_negative.getrow(u).indices
-            users.extend([u]*len(n_i))
-            neg_items.extend(n_i)
-            valid_item.extend(valid_matrix.getrow(u).indices)
-            test_item.extend(test_matrix.getrow(u).indices)
+        if test_negative is not None:
+            self.user_pos_train = None
+            self.user_num = test_negative.shape[0]
+            neg_users, neg_items = csr_to_user_item_pair(test_negative)
+            self.negative_data = get_data_loader(neg_users, neg_items, batch_size=1024, shuffle=False)
+            valid_users, valid_items = csr_to_user_item_pair(valid_matrix)
+            self.valid_data = get_data_loader(valid_users, valid_items, batch_size=1024, shuffle=False)
+            test_users, test_items = csr_to_user_item_pair(test_matrix)
+            self.test_data = get_data_loader(test_users, test_items, batch_size=1024, shuffle=False)
 
-        self.negative_data = get_data_loader(users, neg_items, batch_size=1024, shuffle=False)
-        self.valid_data = get_data_loader(np.arange(self.user_num), valid_item, batch_size=1024, shuffle=False)
-        self.test_data = get_data_loader(np.arange(self.user_num), test_item, batch_size=1024, shuffle=False)
-
-        self.test_item = np.full(self.user_num, self.negative_num)
+            self.test_item = np.zeros([self.user_num, 1], dtype=np.intc)
+        else:
+            self.user_pos_train = csr_to_user_dict(train_matrix)
+            _, self.valid_item = csr_to_user_item_pair(valid_matrix)
+            _, self.test_item = csr_to_user_item_pair(test_matrix)
 
     def print_metrics(self):
         print("NDCG_TOP@5:5:50, HR@5:5:50")
 
     def evaluate(self, model):
+        if self.user_pos_train is not None:
+            valid_result, test_result = self._evaluate_without_negative(model)
+        else:
+            valid_result, test_result = self._evaluate_with_negative(model)
+        return valid_result, test_result
+
+    def _evaluate_without_negative(self, model):
+        ranking_score = model.get_ratings_matrix()
+        valid_result = self._eval(ranking_score, self.user_pos_train, self.valid_item)
+        test_result = self._eval(ranking_score, self.user_pos_train, self.test_item)
+        return valid_result, test_result
+
+    def _evaluate_with_negative(self, model):
         negative_ratings = []
         for users, items in self.negative_data:
             r_tmp = model.predict(users, items)
@@ -46,7 +66,7 @@ class LeaveOneOutEvaluator(AbstractEvaluator):
             valid_ratings.extend(r_tmp)
         valid_ratings = np.array(valid_ratings, dtype=np.float32)
         valid_ratings = np.reshape(valid_ratings, newshape=[self.user_num, -1])
-        valid_ratings = np.array(np.hstack([negative_ratings, valid_ratings]), dtype=np.float32, copy=True)
+        valid_ratings = np.hstack([valid_ratings, negative_ratings])
 
         test_ratings = []
         for users, items in self.test_data:
@@ -54,14 +74,16 @@ class LeaveOneOutEvaluator(AbstractEvaluator):
             test_ratings.extend(r_tmp)
         test_ratings = np.array(test_ratings, dtype=np.float32)
         test_ratings = np.reshape(test_ratings, newshape=[self.user_num, -1])
-        test_ratings = np.array(np.hstack([negative_ratings, test_ratings]), copy=True)
+        test_ratings = np.hstack([test_ratings, negative_ratings])
 
-        valid_result = evaluate_loo(valid_ratings, self.test_item)
-        valid_result = valid_result[:, np.arange(4, 50, 5)]
-        valid_result = np.ndarray.flatten(valid_result)
-
-        test_result = evaluate_loo(test_ratings, self.test_item)
-        test_result = test_result[:, np.arange(4, 50, 5)]
-        test_result = np.ndarray.flatten(test_result)
+        valid_result = self._eval(valid_ratings, None, self.test_item)
+        test_result = self._eval(test_ratings, None, self.test_item)
 
         return valid_result, test_result
+
+    @staticmethod
+    def _eval(ranking_score, user_pos_train, test_item):
+        result = evaluate_loo(ranking_score, user_pos_train, test_item)
+        result = result[:, np.arange(4, 50, 5)]
+        result = np.ndarray.flatten(result)
+        return result

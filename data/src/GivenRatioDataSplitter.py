@@ -67,7 +67,7 @@ class GivenRatioDataSplitter(AbstractDataSplitter):
                 valid_data.extend(valid_tmp)
                 test_data.extend(test_tmp)
         elif self.data_format == "UIR":
-            #data = data.sort_values(by=["user"])
+            # data = data.sort_values(by=["user"])
             user_grouped = data.groupby("user")
             for user, data_u in user_grouped:
                 data_u = data_u.values

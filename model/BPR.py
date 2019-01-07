@@ -5,20 +5,17 @@ import tensorflow as tf
 from utils.tools import random_choice
 from model.losses import log_loss
 from data.DataLoader import get_data_loader
-import configparser
 from evaluation.Evaluator import FoldOutEvaluator
+from evaluation.Evaluator import LeaveOneOutEvaluator
 
 
 class BPR(AbstractRecommender):
     def __init__(self, sess, dataset):
         super(BPR, self).__init__()
-        config = configparser.ConfigParser()
-        config.read("conf/BPR.ini")
-        self.conf = dict(config.items("hyperparameters"))
-        print("BPR arguments: %s " % (self.conf))
         train_matrix = dataset.train_matrix
         valid_matrix = dataset.valid_matrix
         test_matrix = dataset.test_matrix
+        test_negative = dataset.test_negative
 
         self.users_num, self.items_num = train_matrix.shape
 
@@ -33,15 +30,15 @@ class BPR(AbstractRecommender):
             self.user_pos_train[u] = train_matrix.getrow(u).indices
             self.user_pos_test[u] = test_matrix.getrow(u).indices
         self.all_items = np.arange(self.items_num)
-        self.evaluator = FoldOutEvaluator(train_matrix, valid_matrix, test_matrix)
+        self.evaluator = LeaveOneOutEvaluator(train_matrix, valid_matrix, test_matrix, test_negative)
 
         self.mf = MatrixFactorization(self.users_num, self.items_num, self.factors_num, name=self.__class__.__name__)
-        self._build_model()
+        self.build_model()
         self.sess = sess
         self.sess.run(tf.global_variables_initializer())
 
     # TODO rename function name.
-    def _build_model(self):
+    def build_model(self):
         self.user_h = tf.placeholder(tf.int32, name="user")
         self.pos_item_h = tf.placeholder(tf.int32, name="pos_item")
         self.neg_item_h = tf.placeholder(tf.int32, name="neg_item")
@@ -55,6 +52,8 @@ class BPR(AbstractRecommender):
         opt = tf.train.GradientDescentOptimizer(self.lr)
         self.update = opt.minimize(self.total_loss, name="update")
         self.all_logits = self.mf.get_all_logits(self.user_h)
+
+        self.y_hat = self.mf.predict(self.user_h, self.pos_item_h, name="predict")
 
     def get_training_data(self):
         users = []
@@ -79,7 +78,7 @@ class BPR(AbstractRecommender):
                         self.pos_item_h: pos_items,
                         self.neg_item_h: neg_items}
                 self.sess.run(self.update, feed_dict=feed)
-            result = self.eval()
+            result = self.evaluate_model()
             buf = '\t'.join([str(x) for x in result])
             print("epoch %d:\t\t%s" % (epoch, buf))
 
@@ -88,6 +87,12 @@ class BPR(AbstractRecommender):
         all_ratings = np.matmul(user_embedding, item_embedding.T) + item_bias
         return all_ratings
 
-    def eval(self):
+    def predict(self, users, items):
+        feed = {self.user_h: users,
+                self.pos_item_h: items}
+        pred = self.sess.run(self.y_hat, feed_dict=feed)
+        return pred
+
+    def evaluate_model(self):
         valid_result, test_result = self.evaluator.evaluate(self)
         return test_result

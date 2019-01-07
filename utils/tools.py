@@ -27,7 +27,7 @@ def random_choice(a, size=None, replace=True, p=None, exclusion=None):
     return sample
 
 
-def csr_to_dict(sparse_matrix_data):
+def csr_to_user_dict(sparse_matrix_data):
     """convert a scipy.sparse.csr_matrix to a dict,
     where the key is row number, and value is the
     non-empty index in each row.
@@ -37,3 +37,12 @@ def csr_to_dict(sparse_matrix_data):
         if any(value.indices):
             idx_value_dict[idx] = value.indices
     return idx_value_dict
+
+
+def csr_to_user_item_pair(sparse_matrix_data):
+    users, items = [], []
+    for user, u_items in enumerate(sparse_matrix_data):
+        items_num = u_items.nnz
+        users.extend([user]*items_num)
+        items.extend(u_items.indices)
+    return users, items
