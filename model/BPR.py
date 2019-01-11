@@ -4,7 +4,7 @@ import numpy as np
 import tensorflow as tf
 from utils.tools import random_choice
 from model.losses import log_loss
-from data.DataLoader import get_data_loader
+from data.DataIterator import get_data_iterator
 from evaluation.Evaluator import FoldOutEvaluator
 from evaluation.Evaluator import LeaveOneOutEvaluator
 
@@ -30,7 +30,7 @@ class BPR(AbstractRecommender):
             self.user_pos_train[u] = train_matrix.getrow(u).indices
             self.user_pos_test[u] = test_matrix.getrow(u).indices
         self.all_items = np.arange(self.items_num)
-        self.evaluator = LeaveOneOutEvaluator(train_matrix, valid_matrix, test_matrix, test_negative)
+        self.evaluator = LeaveOneOutEvaluator(train_matrix, test_matrix, test_negative)
 
         self.mf = MatrixFactorization(self.users_num, self.items_num, self.factors_num, name=self.__class__.__name__)
         self.build_model()
@@ -67,7 +67,7 @@ class BPR(AbstractRecommender):
             pos_items += pos.tolist()
             neg_items += neg.tolist()
 
-        return get_data_loader(users, pos_items, neg_items, batch_size=self.batch_size, shuffle=True)
+        return get_data_iterator(users, pos_items, neg_items, batch_size=self.batch_size, shuffle=True)
 
     def train_model(self):
         self.evaluator.print_metrics()
@@ -87,12 +87,17 @@ class BPR(AbstractRecommender):
         all_ratings = np.matmul(user_embedding, item_embedding.T) + item_bias
         return all_ratings
 
-    def predict(self, users, items):
-        feed = {self.user_h: users,
-                self.pos_item_h: items}
-        pred = self.sess.run(self.y_hat, feed_dict=feed)
+    def predict_for_eval(self, user, items=None):
+        if items is not None:
+            users = [user]*len(items)
+            feed = {self.user_h: users,
+                    self.pos_item_h: items}
+            pred = self.sess.run(self.y_hat, feed_dict=feed)
+        else:
+            feed = {self.user_h: user}
+            pred = self.sess.run(self.all_logits, feed_dict=feed)
         return pred
 
     def evaluate_model(self):
-        valid_result, test_result = self.evaluator.evaluate(self)
+        test_result = self.evaluator.evaluate(self)
         return test_result

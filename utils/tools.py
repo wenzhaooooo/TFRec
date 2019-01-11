@@ -1,5 +1,7 @@
 import numpy as np
 import time
+import heapq
+import itertools
 
 
 def timer(func):
@@ -32,6 +34,8 @@ def csr_to_user_dict(sparse_matrix_data):
     where the key is row number, and value is the
     non-empty index in each row.
     """
+    if sparse_matrix_data is None:
+        raise ValueError("sparse_matrix_data is None")
     idx_value_dict = {}
     for idx, value in enumerate(sparse_matrix_data):
         if any(value.indices):
@@ -46,3 +50,8 @@ def csr_to_user_item_pair(sparse_matrix_data):
         users.extend([user]*items_num)
         items.extend(u_items.indices)
     return users, items
+
+
+def argmax_top_k(a, top_k=50):
+    ele_idx = heapq.nlargest(top_k, zip(a, itertools.count()))
+    return np.array([idx for ele, idx in ele_idx], dtype=np.intc)

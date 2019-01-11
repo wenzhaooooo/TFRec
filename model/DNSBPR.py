@@ -1,6 +1,6 @@
 import numpy as np
 from utils.tools import random_choice
-from data.DataLoader import get_data_loader
+from data.DataIterator import get_data_iterator
 from model.BPR import BPR
 
 
@@ -32,4 +32,4 @@ class DNSBPR(BPR):
             pos_items += pos.tolist()
             neg_items += neg.tolist()
 
-        return get_data_loader(users, pos_items, neg_items, batch_size=self.batch_size, shuffle=True)
+        return get_data_iterator(users, pos_items, neg_items, batch_size=self.batch_size, shuffle=True)
