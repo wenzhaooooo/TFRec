@@ -14,35 +14,50 @@ class GivenRatioDataSplitter(AbstractDataSplitter):
         self.item_min = item_min
         self.negative_num = negative_num
 
-    def load_data(self, file_path):
+    def load_data(self, train_file, test_file=None, valid_file=None):
         if self.data_format == "UIRT":
             columns = ["user", "item", "rating", "time"]
+            by_time = True
         elif self.data_format == "UIR":
             columns = ["user", "item", "rating"]
+            by_time = False
         else:
             raise ValueError("There is not data format '%s'" % self.data_format)
 
-        # read data
-        data = np.genfromtxt(file_path, dtype=None, names=columns, delimiter=self.sep)
-        # filter data
-        data = filter_data(data, user_min=self.user_min, item_min=self.item_min)
-        # remap user and item id and return the remapped information
-        data, user2id, item2id, id2user, id2item = remap_id(data)
+        if valid_file is not None:  # all the train, valid and test data are already split
+            train_data = np.genfromtxt(train_file, dtype=None, names=columns, delimiter=self.sep)
+            valid_data = np.genfromtxt(valid_file, dtype=None, names=columns, delimiter=self.sep)
+            test_data = np.genfromtxt(test_file, dtype=None, names=columns, delimiter=self.sep)
+        elif test_file is not None:  # just have train and test data, split valid set from train data
+            train_data = np.genfromtxt(train_file, dtype=None, names=columns, delimiter=self.sep)
+            train_data, valid_data = split_data_by_ratio(train_data, section=0.7/0.8, by_time=by_time)
+            test_data = np.genfromtxt(test_file, dtype=None, names=columns, delimiter=self.sep)
+        else:  # data not split at all, split train, valid and test set
+            data = np.genfromtxt(train_file, dtype=None, names=columns, delimiter=self.sep)
+            data = filter_data(data, user_min=self.user_min, item_min=self.item_min)  # filter data
+            train_data, test_data = split_data_by_ratio(data, section=0.8, by_time=by_time)
+            train_data, valid_data = split_data_by_ratio(train_data, section=0.7/0.8, by_time=by_time)
 
-        # store dataset information
+        all_data = np.concatenate([train_data, valid_data, test_data])
+        all_data, user2id, item2id, id2user, id2item = remap_id(all_data)  # get user and item id remap information
+
+        # store remap and dataset information
         dataset = Dataset()
         dataset.user2id, dataset.item2id, dataset.id2user, dataset.id2item = user2id, item2id, id2user, id2item
         dataset.num_users, dataset.num_items = len(user2id), len(item2id)
-        dataset.num_ratings = len(data)
+        dataset.num_ratings = len(all_data)
 
-        # split data
-        if self.data_format == "UIRT":
-            by_time = True
-        elif self.data_format == "UIR":
-            by_time = False
+        # remap user id
+        vfunc = np.vectorize(lambda x: user2id[x])
+        train_data["user"] = vfunc(train_data["user"])
+        test_data["user"] = vfunc(test_data["user"])
+        valid_data["user"] = vfunc(valid_data["user"])
 
-        train_data, test_data = split_data_by_ratio(data, section=0.8, by_time=by_time)
-        train_data, valid_data = split_data_by_ratio(data, section=0.7/0.8, by_time=by_time)
+        # remap item id
+        vfunc = np.vectorize(lambda x: item2id[x])
+        train_data["item"] = vfunc(train_data["item"])
+        test_data["item"] = vfunc(test_data["item"])
+        valid_data["item"] = vfunc(valid_data["item"])
 
         # construct sparse matrix
         train_matrix = csr_matrix((train_data["rating"], (train_data["user"], train_data["item"])),
