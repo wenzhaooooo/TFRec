@@ -4,7 +4,7 @@ class AbstractEvaluator(object):
     def __init__(self):
         pass
 
-    def print_metrics(self):
+    def metrics_info(self):
         raise NotImplementedError
 
     def evaluate(self, ranking_score):

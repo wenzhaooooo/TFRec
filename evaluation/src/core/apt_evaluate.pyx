@@ -4,19 +4,19 @@ cimport numpy as np
 from cpython.mem cimport PyMem_Malloc, PyMem_Free
 import os
 
-cdef extern from "c_tools.h":
+cdef extern from "tools.h":
     void c_top_k_array_index(float **ratings, int rating_len, int rows_num,
                              int top_k, int thread_num, int **results)
 
 # TODO rename function and file
-cdef extern from "c_evaluate.h":
-    void c_evaluate(int test_num,
-                    int **ranks, int rank_len,
-                    int **ground_truths, int *ground_truths_num,
-                    int thread_num, float *results)
+cdef extern from "evaluate.h":
+    void evaluate(int test_num,
+                  int **ranks, int rank_len,
+                  int **ground_truths, int *ground_truths_num,
+                  int thread_num, float *results)
 
 def apt_evaluate(ratings, test_items, top_k=50, thread_num = None):
-    metrics_num = 6
+    metrics_num = 5
     tests_num, rating_len = np.shape(ratings)
     if tests_num != len(test_items):
         raise Exception("The lengths of 'ranks' and 'test_items' are different.")
@@ -48,7 +48,7 @@ def apt_evaluate(ratings, test_items, top_k=50, thread_num = None):
     results_pt = <float *>np.PyArray_DATA(results)
 
     #evaluate
-    c_evaluate(tests_num, ranks_pt, top_k, test_items_pt, test_num_pt, thread_num, results_pt)
+    evaluate(tests_num, ranks_pt, top_k, test_items_pt, test_num_pt, thread_num, results_pt)
 
     #release the allocated space
     PyMem_Free(ratings_pt)

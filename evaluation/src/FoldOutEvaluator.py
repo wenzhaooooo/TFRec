@@ -36,11 +36,8 @@ class FoldOutEvaluator(AbstractEvaluator):
 
         self.user_pos_test = csr_to_user_dict(test_matrix)
 
-    def print_metrics(self):
-        """In NDCG, 'TOP' denotes that its idcg is calculated by the ranking of top-n items,
-        'ALL' denotes that its idcg is calculated by the ranking of all positive items
-        """
-        print("Precision@5:5:50, Recall@5:5:50, MAP@5:5:50, NDCG@5:5:50, MRR@5:5:50")
+    def metrics_info(self):
+        return "Precision@5:5:50, Recall@5:5:50, MAP@5:5:50, NDCG@5:5:50, MRR@5:5:50"
 
     def evaluate(self, model):
         if self.user_neg_test is not None:

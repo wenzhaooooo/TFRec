@@ -19,6 +19,7 @@ class DataLoader(object):
         self.format = data_info["format"] if "format" in data_info else None
         self.splitter = data_info["splitter"] if "splitter" in data_info else None
         self.separator = eval(data_info["separator"]) if "separator" in data_info else None
+        self.remap_id = eval(data_info["remap_id"].capitalize()) if "remap_id" in data_info else None
 
         self.user_min = eval(data_info["user_min"]) if "user_min" in data_info else None
         self.item_min = eval(data_info["item_min"]) if "item_min" in data_info else None
@@ -44,10 +45,10 @@ class DataLoader(object):
         splitter = GivenRatioDataSplitter(data_format=self.format, sep=self.separator,
                                           user_min=self.user_min, item_min=self.item_min,
                                           negative_num=self.evaluate_neg)
-        return splitter.load_data(self.train_file, self.test_file, self.valid_file)
+        return splitter.load_data(self.train_file, self.valid_file, self.test_file)
 
     def _load_loo(self):
         splitter = LeaveOneOutDataSplitter(data_format=self.format, sep=self.separator,
                                            user_min=self.user_min, item_min=self.item_min,
                                            negative_num=self.evaluate_neg)
-        return splitter.load_data(self.train_file, self.test_file, self.valid_file)
+        return splitter.load_data(self.train_file, self.valid_file, self.test_file)

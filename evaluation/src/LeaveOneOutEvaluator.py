@@ -25,8 +25,8 @@ class LeaveOneOutEvaluator(AbstractEvaluator):
 
         self.user_pos_test = csr_to_user_dict(test_matrix)
 
-    def print_metrics(self):
-        print("NDCG@5:5:50, HR@5:5:50")
+    def metrics_info(self):
+        return "NDCG@5:5:50, HR@5:5:50"
 
     def evaluate(self, model):
         if self.user_neg_test is not None:

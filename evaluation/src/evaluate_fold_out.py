@@ -2,6 +2,7 @@ from evaluation.src.fold_out_metrics import precision, map, recall, ndcg, mrr
 import numpy as np
 from utils.tools import argmax_top_k
 from concurrent.futures import ThreadPoolExecutor
+from evaluation.src.core.evaluate import evaluate_model
 
 
 _model = None
@@ -19,6 +20,10 @@ def evaluate_fold_out(model,
 
     if not (user_pos_train or user_neg_test):
         raise ValueError("lack evaluate information...")
+    if user_neg_test is None:  # using cpp test
+        ranking_score = model.predict_for_eval()
+        return evaluate_model(ranking_score, user_pos_train, user_pos_test, top_k=top_k)
+
     global _model
     global _user_pos_train
     global _user_pos_test
@@ -44,7 +49,7 @@ def evaluate_fold_out(model,
     for re in batch_result:
         result += re
     ret = result / test_num
-    ret = np.reshape(ret, [5,-1])
+    ret = np.reshape(ret, [5, -1])
     return ret
 
 

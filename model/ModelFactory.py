@@ -1,13 +1,8 @@
 from model.AOBPR import AOBPR
 from model.BPR import BPR
 from model.DNSBPR import DNSBPR
-from model.BPRMF import BPRMF
-#from model.FISM import FISM
-#from model.GMF import GMF
-#from model.MLP import MLP
-#from model.NAIS import NAIS
-#from model.NeuMF import NeuMF
-#from model.NeuPR import NeuPR
+from model.APL import APL
+from model.APL_ori import APL_ori
 
 
 class ModelFactory(object):
@@ -15,13 +10,8 @@ class ModelFactory(object):
         self.model_dict = {"aobpr": AOBPR,
                            "bpr": BPR,
                            "dnsbpr": DNSBPR,
-                           #"fism": FISM,
-                           "bprmf": BPRMF,
-                           #"gmf": GMF,
-                           #"mlp": MLP,
-                           #"nais": NAIS,
-                           #"neumf": NeuMF,
-                           #"neupr": NeuPR
+                           "apl": APL,
+                           "apl_ori": APL_ori
                            }
 
     def get_model(self, name):

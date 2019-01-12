@@ -5,18 +5,14 @@ import tensorflow as tf
 from utils.tools import random_choice
 from model.losses import log_loss
 from data.DataIterator import get_data_iterator
-from evaluation.Evaluator import FoldOutEvaluator
-from evaluation.Evaluator import LeaveOneOutEvaluator
+from utils.tools import csr_to_user_dict
 
 
 class BPR(AbstractRecommender):
-    def __init__(self, sess, dataset):
+    def __init__(self, sess, dataset, evaluator):
         super(BPR, self).__init__()
+        self.logger = self.get_logger(dataset.name)
         train_matrix = dataset.train_matrix
-        valid_matrix = dataset.valid_matrix
-        test_matrix = dataset.test_matrix
-        test_negative = dataset.test_negative
-
         self.users_num, self.items_num = train_matrix.shape
 
         self.factors_num = int(self.conf["factors_num"])
@@ -24,13 +20,9 @@ class BPR(AbstractRecommender):
         self.reg = float(self.conf["reg"])
         self.epochs = int(self.conf["epochs"])
         self.batch_size = int(self.conf["batch_size"])
-        self.user_pos_train = {}
-        self.user_pos_test = {}
-        for u in range(self.users_num):
-            self.user_pos_train[u] = train_matrix.getrow(u).indices
-            self.user_pos_test[u] = test_matrix.getrow(u).indices
+        self.user_pos_train = csr_to_user_dict(train_matrix)
         self.all_items = np.arange(self.items_num)
-        self.evaluator = LeaveOneOutEvaluator(train_matrix, test_matrix, test_negative)
+        self.evaluator = evaluator
 
         self.mf = MatrixFactorization(self.users_num, self.items_num, self.factors_num, name=self.__class__.__name__)
         self.build_model()
@@ -70,7 +62,7 @@ class BPR(AbstractRecommender):
         return get_data_iterator(users, pos_items, neg_items, batch_size=self.batch_size, shuffle=True)
 
     def train_model(self):
-        self.evaluator.print_metrics()
+        self.logger.info(self.evaluator.metrics_info())
         for epoch in range(self.epochs):
             train_data = self.get_training_data()
             for users, pos_items, neg_items in train_data:
@@ -78,9 +70,7 @@ class BPR(AbstractRecommender):
                         self.pos_item_h: pos_items,
                         self.neg_item_h: neg_items}
                 self.sess.run(self.update, feed_dict=feed)
-            result = self.evaluate_model()
-            buf = '\t'.join([str(x) for x in result])
-            print("epoch %d:\t\t%s" % (epoch, buf))
+            self.evaluate_model(epoch)
 
     def get_ratings_matrix(self):
         user_embedding, item_embedding, item_bias = self.sess.run(self.mf.parameters())
@@ -98,6 +88,7 @@ class BPR(AbstractRecommender):
             pred = self.sess.run(self.all_logits, feed_dict=feed)
         return pred
 
-    def evaluate_model(self):
-        test_result = self.evaluator.evaluate(self)
-        return test_result
+    def evaluate_model(self, epoch):
+        result = self.evaluator.evaluate(self)
+        buf = '\t'.join([str(x) for x in result])
+        self.logger.info("epoch %d:\t\t%s" % (epoch, buf))

@@ -1,5 +1,5 @@
-#ifndef C_METRICS_H
-#define C_METRICS_H
+#ifndef FOLDOUT_METRICS_H
+#define FOLDOUT_METRICS_H
 
 #include <vector>
 #include <set>
@@ -8,7 +8,7 @@ using std::vector;
 using std::set;
 
 
-vector<float> c_precision(int *rank, int top_k, int *truth, int truth_len)
+vector<float> precision(int *rank, int top_k, int *truth, int truth_len)
 {
     vector<float> result(top_k);
     int hits = 0;
@@ -24,7 +24,7 @@ vector<float> c_precision(int *rank, int top_k, int *truth, int truth_len)
     return result;
 }
 
-vector<float> c_recall(int *rank, int top_k, int *truth, int truth_len)
+vector<float> recall(int *rank, int top_k, int *truth, int truth_len)
 {
     vector<float> result(top_k);
     int hits = 0;
@@ -40,9 +40,9 @@ vector<float> c_recall(int *rank, int top_k, int *truth, int truth_len)
     return result;
 }
 
-vector<float> c_ap(int *rank, int top_k, int *truth, int truth_len)
+vector<float> ap(int *rank, int top_k, int *truth, int truth_len)
 {
-    vector<float> result = c_precision(rank, top_k, truth, truth_len);
+    vector<float> result = precision(rank, top_k, truth, truth_len);
     set<int> truth_set(truth, truth+truth_len);
     float sum_pre = 0;
     for(int i=0; i<top_k; i++)
@@ -56,7 +56,7 @@ vector<float> c_ap(int *rank, int top_k, int *truth, int truth_len)
     return result;
 }
 
-vector<float> c_ndcg_top(int *rank, int top_k, int *truth, int truth_len)
+vector<float> ndcg(int *rank, int top_k, int *truth, int truth_len)
 {
     vector<float> result(top_k);
     float iDCG = 0;
@@ -74,28 +74,7 @@ vector<float> c_ndcg_top(int *rank, int top_k, int *truth, int truth_len)
     return result;
 }
 
-vector<float> c_ndcg_all(int *rank, int top_k, int *truth, int truth_len)
-{
-    vector<float> result(top_k);
-    float iDCG = 0;
-    for(int i=2; i<truth_len+2; i++)
-    {
-        iDCG += 1.0/log2(i);
-    }
-    set<int> truth_set(truth, truth+truth_len);
-    float DCG = 0;
-    for(int i=0; i<top_k; i++)
-    {
-        if(truth_set.count(rank[i]))
-        {
-            DCG += 1.0/log2(i+2);
-        }
-        result[i] = DCG/iDCG;
-    }
-    return result;
-}
-
-vector<float> c_mrr(int *rank, int top_k, int *truth, int truth_len)
+vector<float> mrr(int *rank, int top_k, int *truth, int truth_len)
 {
     vector<float> result(top_k);
     float rr = 0;

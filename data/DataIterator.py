@@ -303,6 +303,7 @@ class DataIterator(object):
         return len(self.batch_sampler)
 
 
+# TODO simpling DataIterator
 def get_data_iterator(*args, batch_size=1, shuffle=False, collate_fn=my_collate):
     dataset = RSDataset(*args)
     return DataIterator(dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn)

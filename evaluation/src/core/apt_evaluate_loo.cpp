@@ -1107,6 +1107,7 @@ static char __pyx_k_numpy[] = "numpy";
 static char __pyx_k_range[] = "range";
 static char __pyx_k_ranks[] = "ranks";
 static char __pyx_k_shape[] = "shape";
+static char __pyx_k_top_k[] = "top_k";
 static char __pyx_k_zeros[] = "zeros";
 static char __pyx_k_import[] = "__import__";
 static char __pyx_k_float32[] = "float32";
@@ -1114,7 +1115,6 @@ static char __pyx_k_ratings[] = "ratings";
 static char __pyx_k_reshape[] = "reshape";
 static char __pyx_k_results[] = "results";
 static char __pyx_k_newshape[] = "newshape";
-static char __pyx_k_rank_len[] = "rank_len";
 static char __pyx_k_ranks_pt[] = "ranks_pt";
 static char __pyx_k_Exception[] = "Exception";
 static char __pyx_k_cpu_count[] = "cpu_count";
@@ -1131,7 +1131,7 @@ static char __pyx_k_metrics_value[] = "metrics_value";
 static char __pyx_k_test_items_pt[] = "test_items_pt";
 static char __pyx_k_apt_evaluate_loo[] = "apt_evaluate_loo";
 static char __pyx_k_ndarray_is_not_C_contiguous[] = "ndarray is not C contiguous";
-static char __pyx_k_home_sun_Desktop_abcrec_evaluat[] = "/home/sun/Desktop/abcrec/evaluation/ranking/core/apt_evaluate_loo.pyx";
+static char __pyx_k_home_sun_Desktop_abcrec_evaluat[] = "/home/sun/Desktop/abcrec/evaluation/src/core/apt_evaluate_loo.pyx";
 static char __pyx_k_unknown_dtype_code_in_numpy_pxd[] = "unknown dtype code in numpy.pxd (%d)";
 static char __pyx_k_Format_string_allocated_too_shor[] = "Format string allocated too short, see comment in numpy.pxd";
 static char __pyx_k_Non_native_byte_order_not_suppor[] = "Non-native byte order not supported";
@@ -1163,7 +1163,6 @@ static PyObject *__pyx_n_s_np;
 static PyObject *__pyx_n_s_numpy;
 static PyObject *__pyx_n_s_os;
 static PyObject *__pyx_n_s_range;
-static PyObject *__pyx_n_s_rank_len;
 static PyObject *__pyx_n_s_ranks;
 static PyObject *__pyx_n_s_ranks_pt;
 static PyObject *__pyx_n_s_rating_len;
@@ -1178,9 +1177,10 @@ static PyObject *__pyx_n_s_test_items;
 static PyObject *__pyx_n_s_test_items_pt;
 static PyObject *__pyx_n_s_tests_num;
 static PyObject *__pyx_n_s_thread_num;
+static PyObject *__pyx_n_s_top_k;
 static PyObject *__pyx_kp_u_unknown_dtype_code_in_numpy_pxd;
 static PyObject *__pyx_n_s_zeros;
-static PyObject *__pyx_pf_16apt_evaluate_loo_apt_evaluate_loo(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_ratings, PyObject *__pyx_v_test_items, PyObject *__pyx_v_rank_len, PyObject *__pyx_v_thread_num); /* proto */
+static PyObject *__pyx_pf_16apt_evaluate_loo_apt_evaluate_loo(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_ratings, PyObject *__pyx_v_test_items, PyObject *__pyx_v_top_k, PyObject *__pyx_v_thread_num); /* proto */
 static int __pyx_pf_5numpy_7ndarray___getbuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info, int __pyx_v_flags); /* proto */
 static void __pyx_pf_5numpy_7ndarray_2__releasebuffer__(PyArrayObject *__pyx_v_self, Py_buffer *__pyx_v_info); /* proto */
 static PyObject *__pyx_int_2;
@@ -1200,7 +1200,7 @@ static PyObject *__pyx_codeobj__9;
 /* "apt_evaluate_loo.pyx":17
  *                       int thread_num, float *results)
  * 
- * def apt_evaluate_loo(ratings, test_items, rank_len = 50, thread_num = None):             # <<<<<<<<<<<<<<
+ * def apt_evaluate_loo(ratings, test_items, top_k=50, thread_num = None):             # <<<<<<<<<<<<<<
  *     metrics_num = 2
  * 
  */
@@ -1211,7 +1211,7 @@ static PyMethodDef __pyx_mdef_16apt_evaluate_loo_1apt_evaluate_loo = {"apt_evalu
 static PyObject *__pyx_pw_16apt_evaluate_loo_1apt_evaluate_loo(PyObject *__pyx_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   PyObject *__pyx_v_ratings = 0;
   PyObject *__pyx_v_test_items = 0;
-  PyObject *__pyx_v_rank_len = 0;
+  PyObject *__pyx_v_top_k = 0;
   PyObject *__pyx_v_thread_num = 0;
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
@@ -1220,7 +1220,7 @@ static PyObject *__pyx_pw_16apt_evaluate_loo_1apt_evaluate_loo(PyObject *__pyx_s
   __Pyx_RefNannyDeclarations
   __Pyx_RefNannySetupContext("apt_evaluate_loo (wrapper)", 0);
   {
-    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_ratings,&__pyx_n_s_test_items,&__pyx_n_s_rank_len,&__pyx_n_s_thread_num,0};
+    static PyObject **__pyx_pyargnames[] = {&__pyx_n_s_ratings,&__pyx_n_s_test_items,&__pyx_n_s_top_k,&__pyx_n_s_thread_num,0};
     PyObject* values[4] = {0,0,0,0};
     values[2] = ((PyObject *)__pyx_int_50);
     values[3] = ((PyObject *)Py_None);
@@ -1247,7 +1247,7 @@ static PyObject *__pyx_pw_16apt_evaluate_loo_1apt_evaluate_loo(PyObject *__pyx_s
         }
         case  2:
         if (kw_args > 0) {
-          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s_rank_len);
+          PyObject* value = PyDict_GetItem(__pyx_kwds, __pyx_n_s_top_k);
           if (value) { values[2] = value; kw_args--; }
         }
         case  3:
@@ -1271,7 +1271,7 @@ static PyObject *__pyx_pw_16apt_evaluate_loo_1apt_evaluate_loo(PyObject *__pyx_s
     }
     __pyx_v_ratings = values[0];
     __pyx_v_test_items = values[1];
-    __pyx_v_rank_len = values[2];
+    __pyx_v_top_k = values[2];
     __pyx_v_thread_num = values[3];
   }
   goto __pyx_L4_argument_unpacking_done;
@@ -1282,14 +1282,14 @@ static PyObject *__pyx_pw_16apt_evaluate_loo_1apt_evaluate_loo(PyObject *__pyx_s
   __Pyx_RefNannyFinishContext();
   return NULL;
   __pyx_L4_argument_unpacking_done:;
-  __pyx_r = __pyx_pf_16apt_evaluate_loo_apt_evaluate_loo(__pyx_self, __pyx_v_ratings, __pyx_v_test_items, __pyx_v_rank_len, __pyx_v_thread_num);
+  __pyx_r = __pyx_pf_16apt_evaluate_loo_apt_evaluate_loo(__pyx_self, __pyx_v_ratings, __pyx_v_test_items, __pyx_v_top_k, __pyx_v_thread_num);
 
   /* function exit code */
   __Pyx_RefNannyFinishContext();
   return __pyx_r;
 }
 
-static PyObject *__pyx_pf_16apt_evaluate_loo_apt_evaluate_loo(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_ratings, PyObject *__pyx_v_test_items, PyObject *__pyx_v_rank_len, PyObject *__pyx_v_thread_num) {
+static PyObject *__pyx_pf_16apt_evaluate_loo_apt_evaluate_loo(CYTHON_UNUSED PyObject *__pyx_self, PyObject *__pyx_v_ratings, PyObject *__pyx_v_test_items, PyObject *__pyx_v_top_k, PyObject *__pyx_v_thread_num) {
   PyObject *__pyx_v_metrics_num = NULL;
   PyObject *__pyx_v_tests_num = NULL;
   PyObject *__pyx_v_rating_len = NULL;
@@ -1326,7 +1326,7 @@ static PyObject *__pyx_pf_16apt_evaluate_loo_apt_evaluate_loo(CYTHON_UNUSED PyOb
 
   /* "apt_evaluate_loo.pyx":18
  * 
- * def apt_evaluate_loo(ratings, test_items, rank_len = 50, thread_num = None):
+ * def apt_evaluate_loo(ratings, test_items, top_k=50, thread_num = None):
  *     metrics_num = 2             # <<<<<<<<<<<<<<
  * 
  *     tests_num, rating_len = np.shape(ratings)
@@ -1626,7 +1626,7 @@ static PyObject *__pyx_pf_16apt_evaluate_loo_apt_evaluate_loo(CYTHON_UNUSED PyOb
   /* "apt_evaluate_loo.pyx":31
  * 
  *     #store ranks results
- *     ranks = np.zeros([tests_num, rank_len], dtype=np.intc)             # <<<<<<<<<<<<<<
+ *     ranks = np.zeros([tests_num, top_k], dtype=np.intc)             # <<<<<<<<<<<<<<
  *     cdef int **ranks_pt = <int **> PyMem_Malloc(tests_num * sizeof(int *))
  *     for i in range(len(ranks)):
  */
@@ -1640,9 +1640,9 @@ static PyObject *__pyx_pf_16apt_evaluate_loo_apt_evaluate_loo(CYTHON_UNUSED PyOb
   __Pyx_INCREF(__pyx_v_tests_num);
   __Pyx_GIVEREF(__pyx_v_tests_num);
   PyList_SET_ITEM(__pyx_t_3, 0, __pyx_v_tests_num);
-  __Pyx_INCREF(__pyx_v_rank_len);
-  __Pyx_GIVEREF(__pyx_v_rank_len);
-  PyList_SET_ITEM(__pyx_t_3, 1, __pyx_v_rank_len);
+  __Pyx_INCREF(__pyx_v_top_k);
+  __Pyx_GIVEREF(__pyx_v_top_k);
+  PyList_SET_ITEM(__pyx_t_3, 1, __pyx_v_top_k);
   __pyx_t_1 = PyTuple_New(1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 31; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
   __Pyx_GIVEREF(__pyx_t_3);
@@ -1667,7 +1667,7 @@ static PyObject *__pyx_pf_16apt_evaluate_loo_apt_evaluate_loo(CYTHON_UNUSED PyOb
 
   /* "apt_evaluate_loo.pyx":32
  *     #store ranks results
- *     ranks = np.zeros([tests_num, rank_len], dtype=np.intc)
+ *     ranks = np.zeros([tests_num, top_k], dtype=np.intc)
  *     cdef int **ranks_pt = <int **> PyMem_Malloc(tests_num * sizeof(int *))             # <<<<<<<<<<<<<<
  *     for i in range(len(ranks)):
  *         ranks_pt[i] = <int *>np.PyArray_DATA(ranks[i])
@@ -1682,7 +1682,7 @@ static PyObject *__pyx_pf_16apt_evaluate_loo_apt_evaluate_loo(CYTHON_UNUSED PyOb
   __pyx_v_ranks_pt = ((int **)PyMem_Malloc(__pyx_t_9));
 
   /* "apt_evaluate_loo.pyx":33
- *     ranks = np.zeros([tests_num, rank_len], dtype=np.intc)
+ *     ranks = np.zeros([tests_num, top_k], dtype=np.intc)
  *     cdef int **ranks_pt = <int **> PyMem_Malloc(tests_num * sizeof(int *))
  *     for i in range(len(ranks)):             # <<<<<<<<<<<<<<
  *         ranks_pt[i] = <int *>np.PyArray_DATA(ranks[i])
@@ -1757,7 +1757,7 @@ static PyObject *__pyx_pf_16apt_evaluate_loo_apt_evaluate_loo(CYTHON_UNUSED PyOb
     __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
 
     /* "apt_evaluate_loo.pyx":33
- *     ranks = np.zeros([tests_num, rank_len], dtype=np.intc)
+ *     ranks = np.zeros([tests_num, top_k], dtype=np.intc)
  *     cdef int **ranks_pt = <int **> PyMem_Malloc(tests_num * sizeof(int *))
  *     for i in range(len(ranks)):             # <<<<<<<<<<<<<<
  *         ranks_pt[i] = <int *>np.PyArray_DATA(ranks[i])
@@ -1769,13 +1769,13 @@ static PyObject *__pyx_pf_16apt_evaluate_loo_apt_evaluate_loo(CYTHON_UNUSED PyOb
   /* "apt_evaluate_loo.pyx":37
  * 
  *     #get top k rating index
- *     c_top_k_array_index(ratings_pt, rating_len, tests_num, rank_len, thread_num, ranks_pt)             # <<<<<<<<<<<<<<
+ *     c_top_k_array_index(ratings_pt, rating_len, tests_num, top_k, thread_num, ranks_pt)             # <<<<<<<<<<<<<<
  * 
  *     # ground truth pointer, the length array of ground truth pointer
  */
   __pyx_t_12 = __Pyx_PyInt_As_int(__pyx_v_rating_len); if (unlikely((__pyx_t_12 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 37; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_t_13 = __Pyx_PyInt_As_int(__pyx_v_tests_num); if (unlikely((__pyx_t_13 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 37; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_t_14 = __Pyx_PyInt_As_int(__pyx_v_rank_len); if (unlikely((__pyx_t_14 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 37; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_14 = __Pyx_PyInt_As_int(__pyx_v_top_k); if (unlikely((__pyx_t_14 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 37; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_t_15 = __Pyx_PyInt_As_int(__pyx_v_thread_num); if (unlikely((__pyx_t_15 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 37; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   c_top_k_array_index(__pyx_v_ratings_pt, __pyx_t_12, __pyx_t_13, __pyx_t_14, __pyx_t_15, __pyx_v_ranks_pt);
 
@@ -1792,7 +1792,7 @@ static PyObject *__pyx_pf_16apt_evaluate_loo_apt_evaluate_loo(CYTHON_UNUSED PyOb
   /* "apt_evaluate_loo.pyx":44
  *     #evaluate results
  * 
- *     results = np.zeros([metrics_num*rank_len], dtype=np.float32)             # <<<<<<<<<<<<<<
+ *     results = np.zeros([metrics_num * top_k], dtype=np.float32)             # <<<<<<<<<<<<<<
  *     results_pt = <float *>np.PyArray_DATA(results)
  * 
  */
@@ -1801,7 +1801,7 @@ static PyObject *__pyx_pf_16apt_evaluate_loo_apt_evaluate_loo(CYTHON_UNUSED PyOb
   __pyx_t_3 = __Pyx_PyObject_GetAttrStr(__pyx_t_2, __pyx_n_s_zeros); if (unlikely(!__pyx_t_3)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 44; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_3);
   __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-  __pyx_t_2 = PyNumber_Multiply(__pyx_v_metrics_num, __pyx_v_rank_len); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 44; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_2 = PyNumber_Multiply(__pyx_v_metrics_num, __pyx_v_top_k); if (unlikely(!__pyx_t_2)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 44; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_2);
   __pyx_t_1 = PyList_New(1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 44; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);
@@ -1832,7 +1832,7 @@ static PyObject *__pyx_pf_16apt_evaluate_loo_apt_evaluate_loo(CYTHON_UNUSED PyOb
 
   /* "apt_evaluate_loo.pyx":45
  * 
- *     results = np.zeros([metrics_num*rank_len], dtype=np.float32)
+ *     results = np.zeros([metrics_num * top_k], dtype=np.float32)
  *     results_pt = <float *>np.PyArray_DATA(results)             # <<<<<<<<<<<<<<
  * 
  *     #evaluate
@@ -1843,12 +1843,12 @@ static PyObject *__pyx_pf_16apt_evaluate_loo_apt_evaluate_loo(CYTHON_UNUSED PyOb
   /* "apt_evaluate_loo.pyx":48
  * 
  *     #evaluate
- *     evaluate_loo(tests_num, ranks_pt, rank_len, test_items_pt, thread_num, results_pt)             # <<<<<<<<<<<<<<
+ *     evaluate_loo(tests_num, ranks_pt, top_k, test_items_pt, thread_num, results_pt)             # <<<<<<<<<<<<<<
  * 
  *     #release the allocated space
  */
   __pyx_t_15 = __Pyx_PyInt_As_int(__pyx_v_tests_num); if (unlikely((__pyx_t_15 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 48; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
-  __pyx_t_14 = __Pyx_PyInt_As_int(__pyx_v_rank_len); if (unlikely((__pyx_t_14 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 48; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_t_14 = __Pyx_PyInt_As_int(__pyx_v_top_k); if (unlikely((__pyx_t_14 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 48; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __pyx_t_13 = __Pyx_PyInt_As_int(__pyx_v_thread_num); if (unlikely((__pyx_t_13 == (int)-1) && PyErr_Occurred())) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 48; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   evaluate_loo(__pyx_t_15, __pyx_v_ranks_pt, __pyx_t_14, __pyx_v_test_items_pt, __pyx_t_13, __pyx_v_results_pt);
 
@@ -1919,7 +1919,7 @@ static PyObject *__pyx_pf_16apt_evaluate_loo_apt_evaluate_loo(CYTHON_UNUSED PyOb
   /* "apt_evaluate_loo.pyx":17
  *                       int thread_num, float *results)
  * 
- * def apt_evaluate_loo(ratings, test_items, rank_len = 50, thread_num = None):             # <<<<<<<<<<<<<<
+ * def apt_evaluate_loo(ratings, test_items, top_k=50, thread_num = None):             # <<<<<<<<<<<<<<
  *     metrics_num = 2
  * 
  */
@@ -4138,7 +4138,6 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_numpy, __pyx_k_numpy, sizeof(__pyx_k_numpy), 0, 0, 1, 1},
   {&__pyx_n_s_os, __pyx_k_os, sizeof(__pyx_k_os), 0, 0, 1, 1},
   {&__pyx_n_s_range, __pyx_k_range, sizeof(__pyx_k_range), 0, 0, 1, 1},
-  {&__pyx_n_s_rank_len, __pyx_k_rank_len, sizeof(__pyx_k_rank_len), 0, 0, 1, 1},
   {&__pyx_n_s_ranks, __pyx_k_ranks, sizeof(__pyx_k_ranks), 0, 0, 1, 1},
   {&__pyx_n_s_ranks_pt, __pyx_k_ranks_pt, sizeof(__pyx_k_ranks_pt), 0, 0, 1, 1},
   {&__pyx_n_s_rating_len, __pyx_k_rating_len, sizeof(__pyx_k_rating_len), 0, 0, 1, 1},
@@ -4153,6 +4152,7 @@ static __Pyx_StringTabEntry __pyx_string_tab[] = {
   {&__pyx_n_s_test_items_pt, __pyx_k_test_items_pt, sizeof(__pyx_k_test_items_pt), 0, 0, 1, 1},
   {&__pyx_n_s_tests_num, __pyx_k_tests_num, sizeof(__pyx_k_tests_num), 0, 0, 1, 1},
   {&__pyx_n_s_thread_num, __pyx_k_thread_num, sizeof(__pyx_k_thread_num), 0, 0, 1, 1},
+  {&__pyx_n_s_top_k, __pyx_k_top_k, sizeof(__pyx_k_top_k), 0, 0, 1, 1},
   {&__pyx_kp_u_unknown_dtype_code_in_numpy_pxd, __pyx_k_unknown_dtype_code_in_numpy_pxd, sizeof(__pyx_k_unknown_dtype_code_in_numpy_pxd), 0, 1, 0, 0},
   {&__pyx_n_s_zeros, __pyx_k_zeros, sizeof(__pyx_k_zeros), 0, 0, 1, 1},
   {0, 0, 0, 0, 0, 0, 0}
@@ -4251,11 +4251,11 @@ static int __Pyx_InitCachedConstants(void) {
   /* "apt_evaluate_loo.pyx":17
  *                       int thread_num, float *results)
  * 
- * def apt_evaluate_loo(ratings, test_items, rank_len = 50, thread_num = None):             # <<<<<<<<<<<<<<
+ * def apt_evaluate_loo(ratings, test_items, top_k=50, thread_num = None):             # <<<<<<<<<<<<<<
  *     metrics_num = 2
  * 
  */
-  __pyx_tuple__8 = PyTuple_Pack(15, __pyx_n_s_ratings, __pyx_n_s_test_items, __pyx_n_s_rank_len, __pyx_n_s_thread_num, __pyx_n_s_metrics_num, __pyx_n_s_tests_num, __pyx_n_s_rating_len, __pyx_n_s_ratings_pt, __pyx_n_s_i, __pyx_n_s_ranks, __pyx_n_s_ranks_pt, __pyx_n_s_test_items_pt, __pyx_n_s_results, __pyx_n_s_results_pt, __pyx_n_s_metrics_value); if (unlikely(!__pyx_tuple__8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 17; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
+  __pyx_tuple__8 = PyTuple_Pack(15, __pyx_n_s_ratings, __pyx_n_s_test_items, __pyx_n_s_top_k, __pyx_n_s_thread_num, __pyx_n_s_metrics_num, __pyx_n_s_tests_num, __pyx_n_s_rating_len, __pyx_n_s_ratings_pt, __pyx_n_s_i, __pyx_n_s_ranks, __pyx_n_s_ranks_pt, __pyx_n_s_test_items_pt, __pyx_n_s_results, __pyx_n_s_results_pt, __pyx_n_s_metrics_value); if (unlikely(!__pyx_tuple__8)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 17; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_tuple__8);
   __Pyx_GIVEREF(__pyx_tuple__8);
   __pyx_codeobj__9 = (PyObject*)__Pyx_PyCode_New(4, 0, 15, 0, 0, __pyx_empty_bytes, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_tuple__8, __pyx_empty_tuple, __pyx_empty_tuple, __pyx_kp_s_home_sun_Desktop_abcrec_evaluat, __pyx_n_s_apt_evaluate_loo, 17, __pyx_empty_bytes); if (unlikely(!__pyx_codeobj__9)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 17; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
@@ -4409,7 +4409,7 @@ PyMODINIT_FUNC PyInit_apt_evaluate_loo(void)
   /* "apt_evaluate_loo.pyx":17
  *                       int thread_num, float *results)
  * 
- * def apt_evaluate_loo(ratings, test_items, rank_len = 50, thread_num = None):             # <<<<<<<<<<<<<<
+ * def apt_evaluate_loo(ratings, test_items, top_k=50, thread_num = None):             # <<<<<<<<<<<<<<
  *     metrics_num = 2
  * 
  */

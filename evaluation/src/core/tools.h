@@ -1,5 +1,5 @@
-#ifndef C_TOOLS_H
-#define C_TOOLS_H
+#ifndef TOOLS_H
+#define TOOLS_H
 
 #include "ThreadPool.h"
 #include <vector>
