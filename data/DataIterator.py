@@ -304,9 +304,9 @@ class DataIterator(object):
 
 
 # TODO simpling DataIterator
-def get_data_iterator(*args, batch_size=1, shuffle=False, collate_fn=my_collate):
+def get_data_iterator(*args, batch_size=1, shuffle=False, collate_fn=my_collate, drop_last=False):
     dataset = RSDataset(*args)
-    return DataIterator(dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn)
+    return DataIterator(dataset, batch_size=batch_size, shuffle=shuffle, collate_fn=collate_fn, drop_last=drop_last)
 
 
 class RSDataset(Dataset):

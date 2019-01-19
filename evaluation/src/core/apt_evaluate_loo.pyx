@@ -4,7 +4,7 @@ cimport numpy as np
 from cpython.mem cimport PyMem_Malloc, PyMem_Free
 import os
 
-cdef extern from "c_tools.h":
+cdef extern from "tools.h":
     void c_top_k_array_index(float **ratings, int rating_len, int rows_num,
                              int top_k, int thread_num, int **results)
 

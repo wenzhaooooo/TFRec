@@ -42,12 +42,12 @@ class MatrixFactorization(object):
                 all_rating = tf.matmul(self.user_embeddings, self.item_embeddings, transpose_b=True) + self.item_biases
         return all_rating
 
-    def user_l2loss(self, users, name="user_l2loss"):
+    def user_l2loss(self, users=None, name="user_l2loss"):
         with tf.name_scope(name):
             user_embedding = self.get_user_embedding(users)
             return tf.nn.l2_loss(user_embedding)
 
-    def item_l2loss(self, items, name="item_l2loss"):
+    def item_l2loss(self, items=None, name="item_l2loss"):
         with tf.name_scope(name):
             item_embedding = self.get_item_embedding(items)
             item_bias = self.get_item_bias(items)

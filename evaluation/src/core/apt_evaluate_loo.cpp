@@ -4,8 +4,8 @@
 {
     "distutils": {
         "depends": [
-            "c_tools.h",
-            "evaluate_loo.h"
+            "evaluate_loo.h",
+            "tools.h"
         ],
         "extra_compile_args": [
             "-std=c++11"
@@ -265,7 +265,7 @@ static CYTHON_INLINE float __PYX_NAN() {
 #include "stdlib.h"
 #include "numpy/arrayobject.h"
 #include "numpy/ufuncobject.h"
-#include "c_tools.h"
+#include "tools.h"
 #include "evaluate_loo.h"
 #ifdef _OPENMP
 #include <omp.h>
@@ -4399,7 +4399,7 @@ PyMODINIT_FUNC PyInit_apt_evaluate_loo(void)
  * from cpython.mem cimport PyMem_Malloc, PyMem_Free
  * import os             # <<<<<<<<<<<<<<
  * 
- * cdef extern from "c_tools.h":
+ * cdef extern from "tools.h":
  */
   __pyx_t_1 = __Pyx_Import(__pyx_n_s_os, 0, -1); if (unlikely(!__pyx_t_1)) {__pyx_filename = __pyx_f[0]; __pyx_lineno = 5; __pyx_clineno = __LINE__; goto __pyx_L1_error;}
   __Pyx_GOTREF(__pyx_t_1);

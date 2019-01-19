@@ -5,9 +5,9 @@ from model.BPR import BPR
 
 
 class DNSBPR(BPR):
-    def __init__(self, sess, dataset):
-        super(DNSBPR, self).__init__(sess, dataset)
-        self.sample_num = int(self.conf["sample_num"])
+    def __init__(self, sess, dataset, evaluator):
+        super(DNSBPR, self).__init__(sess, dataset, evaluator)
+        self.sample_num = eval(self.conf["sample_num"])
 
     def get_training_data(self):
         users = []

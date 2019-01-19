@@ -3,6 +3,8 @@ from model.BPR import BPR
 from model.DNSBPR import DNSBPR
 from model.APL import APL
 from model.APL_ori import APL_ori
+from model.IRGAN import IRGAN
+from model.APL_Pro import APL_Pro
 
 
 class ModelFactory(object):
@@ -11,6 +13,8 @@ class ModelFactory(object):
                            "bpr": BPR,
                            "dnsbpr": DNSBPR,
                            "apl": APL,
+                           "irgan": IRGAN,
+                           "apl_pro": APL_Pro,
                            "apl_ori": APL_ori
                            }
 

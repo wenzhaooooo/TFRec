@@ -19,12 +19,12 @@ if __name__ == "__main__":
     config = tf.ConfigProto()
     config.gpu_options.allow_growth = True
     sess = tf.Session(config=config)
-    # sess = tf.InteractiveSession(config=config)
-    # sess = tf_debug.LocalCLIDebugWrapperSession(sess)
-    # sess = tf_debug.TensorBoardDebugWrapperSession(sess, "sun:7000")
+    #sess = tf.InteractiveSession(config=config)
+    #sess = tf_debug.LocalCLIDebugWrapperSession(sess)
+    #sess = tf_debug.TensorBoardDebugWrapperSession(sess, "sun:7000")
     model_factory = ModelFactory()
     print("Available models: %s" % model_factory.available_model())
-    Model = model_factory.get_model("APL_ori")
+    Model = model_factory.get_model("apl_pro")
 
     data_loader = DataLoader(data_info)
     dataset = data_loader.load_data()

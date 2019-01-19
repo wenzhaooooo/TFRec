@@ -15,11 +15,11 @@ class BPR(AbstractRecommender):
         train_matrix = dataset.train_matrix
         self.users_num, self.items_num = train_matrix.shape
 
-        self.factors_num = int(self.conf["factors_num"])
-        self.lr = float(self.conf["lr"])
-        self.reg = float(self.conf["reg"])
-        self.epochs = int(self.conf["epochs"])
-        self.batch_size = int(self.conf["batch_size"])
+        self.factors_num = eval(self.conf["factors_num"])
+        self.lr = eval(self.conf["lr"])
+        self.reg = eval(self.conf["reg"])
+        self.epochs = eval(self.conf["epochs"])
+        self.batch_size = eval(self.conf["batch_size"])
         self.user_pos_train = csr_to_user_dict(train_matrix)
         self.all_items = np.arange(self.items_num)
         self.evaluator = evaluator
@@ -77,16 +77,19 @@ class BPR(AbstractRecommender):
         all_ratings = np.matmul(user_embedding, item_embedding.T) + item_bias
         return all_ratings
 
-    def predict_for_eval(self, user, items=None):
-        if items is not None:
-            users = [user]*len(items)
+    def predict_for_eval(self, user=None, items=None):
+        if user is None:  # return all ratings matrix
+            user_embedding, item_embedding, item_bias = self.sess.run(self.mf.parameters())
+            ratings = np.matmul(user_embedding, item_embedding.T) + item_bias
+        elif items is None:  # return all ratings of one user
+            feed = {self.user_h: user}
+            ratings = self.sess.run(self.all_logits, feed_dict=feed)
+        else:  # return the given items rating about the given user.
+            users = [user] * len(items)
             feed = {self.user_h: users,
                     self.pos_item_h: items}
-            pred = self.sess.run(self.y_hat, feed_dict=feed)
-        else:
-            feed = {self.user_h: user}
-            pred = self.sess.run(self.all_logits, feed_dict=feed)
-        return pred
+            ratings = self.sess.run(self.y_hat, feed_dict=feed)
+        return ratings
 
     def evaluate_model(self, epoch):
         result = self.evaluator.evaluate(self)

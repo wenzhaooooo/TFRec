@@ -19,18 +19,22 @@ class AbstractRecommender(object):
     def evaluate_model(self, epoch):
         raise NotImplementedError
 
+    def predict_for_eval(self, user=None, items=None):
+        raise NotImplementedError
+
     def get_logger(self, data_name):
-        log_dir = os.path.join("./Log", data_name)
+        log_dir = os.path.join("./Log", data_name, self.__class__.__name__)
         if not os.path.exists(log_dir):
             os.makedirs(log_dir)
 
         logger_name = '_'.join(["{}={}".format(arg, value) for arg, value in sorted(self.conf.items())
-                                if len(value) < 10])
+                                if len(value) < 20])
         logger_name = "%s_log_%s.log" % (self.__class__.__name__, logger_name)
         logger_name = os.path.join(log_dir, logger_name)
         logger = Logger(logger_name)
         logger.info("\n")
         logger.info("Recommender:%s" % self.__class__.__name__)
+        logger.info("Dataset name：\t%s" % data_name)
         argument = '\n'.join(["{}={}".format(arg, value) for arg, value in sorted(self.conf.items())])
         logger.info("\nHyperparameters:\n%s " % argument)
         return logger
