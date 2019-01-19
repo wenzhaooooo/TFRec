@@ -5,6 +5,8 @@ from model.APL import APL
 from model.APL_ori import APL_ori
 from model.IRGAN import IRGAN
 from model.APL_Pro import APL_Pro
+from model.AttAPL import AttAPL
+from model.GANBPR import GANBPR
 
 
 class ModelFactory(object):
@@ -15,7 +17,9 @@ class ModelFactory(object):
                            "apl": APL,
                            "irgan": IRGAN,
                            "apl_pro": APL_Pro,
-                           "apl_ori": APL_ori
+                           "apl_ori": APL_ori,
+                           "attapl": AttAPL,
+                           "ganbpr": GANBPR
                            }
 
     def get_model(self, name):

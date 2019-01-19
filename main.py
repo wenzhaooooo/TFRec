@@ -24,7 +24,7 @@ if __name__ == "__main__":
     #sess = tf_debug.TensorBoardDebugWrapperSession(sess, "sun:7000")
     model_factory = ModelFactory()
     print("Available models: %s" % model_factory.available_model())
-    Model = model_factory.get_model("apl_pro")
+    Model = model_factory.get_model("ganbpr")
 
     data_loader = DataLoader(data_info)
     dataset = data_loader.load_data()
