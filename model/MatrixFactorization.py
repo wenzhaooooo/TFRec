@@ -6,7 +6,6 @@ class MatrixFactorization(object):
         self.users_num = users_num
         self.items_num = items_num
         self.factors_num = factors_num
-        # self.params = params
 
         # initialize parameters
         with tf.name_scope(name):
@@ -26,17 +25,21 @@ class MatrixFactorization(object):
 
     def predict(self, users, items, name="predict"):
         with tf.name_scope(name):
-            user_embedding = self.get_user_embedding(users)
-            item_embedding = self.get_item_embedding(items)
-            item_bias = self.get_item_bias(items)
+            user_embedding = self.lookup_user_embedding(users)
+            item_embedding = self.lookup_item_embedding(items)
+            item_bias = self.gather_item_bias(items)
             ratings = tf.reduce_sum(tf.multiply(user_embedding, item_embedding), axis=1) + item_bias
             return ratings
 
-    def get_all_logits(self, users=None, name="all_logits"):
-        # If user is 'None', then return all users ratings
+    def all_logits(self, users=None, name="all_logits"):
+        """
+        :param users:
+        :param name:
+        :return: If user is 'None', return all users ratings, otherwise return the ratings of given users
+        """
         with tf.name_scope(name):
             if users is not None:
-                user_embedding = self.get_user_embedding(users)
+                user_embedding = self.lookup_user_embedding(users)
                 all_rating = tf.matmul(user_embedding, self.item_embeddings, transpose_b=True) + self.item_biases
             else:
                 all_rating = tf.matmul(self.user_embeddings, self.item_embeddings, transpose_b=True) + self.item_biases
@@ -44,30 +47,30 @@ class MatrixFactorization(object):
 
     def user_l2loss(self, users=None, name="user_l2loss"):
         with tf.name_scope(name):
-            user_embedding = self.get_user_embedding(users)
+            user_embedding = self.lookup_user_embedding(users)
             return tf.nn.l2_loss(user_embedding)
 
     def item_l2loss(self, items=None, name="item_l2loss"):
         with tf.name_scope(name):
-            item_embedding = self.get_item_embedding(items)
-            item_bias = self.get_item_bias(items)
+            item_embedding = self.lookup_item_embedding(items)
+            item_bias = self.gather_item_bias(items)
             return tf.nn.l2_loss(item_embedding) + tf.nn.l2_loss(item_bias)
 
-    def get_user_embedding(self, user=None):
+    def lookup_user_embedding(self, user=None):
         if user is None:
             embedding = self.user_embeddings
         else:
             embedding = tf.nn.embedding_lookup(self.user_embeddings, user)
         return embedding
 
-    def get_item_embedding(self, item=None):
+    def lookup_item_embedding(self, item=None):
         if item is None:
             embedding = self.item_embeddings
         else:
             embedding = tf.nn.embedding_lookup(self.item_embeddings, item)
         return embedding
 
-    def get_item_bias(self, item=None):
+    def gather_item_bias(self, item=None):
         if item is None:
             bias = self.item_biases
         else:

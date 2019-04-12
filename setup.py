@@ -3,7 +3,7 @@ from Cython.Build import cythonize
 import numpy
 import os
 
-pyx_directories = ["evaluation/src/core/"]
+pyx_directories = ["evaluator/backend/cpp/"]
 
 extensions = [
     Extension(

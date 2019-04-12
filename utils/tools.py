@@ -2,6 +2,26 @@ import numpy as np
 import time
 import heapq
 import itertools
+from inspect import signature
+from functools import wraps
+from scipy.sparse import csr_matrix
+
+
+def typeassert(*type_args, **type_kwargs):
+    def decorate(func):
+        sig = signature(func)
+        bound_types = sig.bind_partial(*type_args, **type_kwargs).arguments
+
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            bound_values = sig.bind(*args, **kwargs)
+            for name, value in bound_values.arguments.items():
+                if name in bound_types:
+                    if not isinstance(value, bound_types[name]):
+                        raise TypeError('Argument {} must be {}'.format(name, bound_types[name]))
+            return func(*args, **kwargs)
+        return wrapper
+    return decorate
 
 
 def timer(func):
@@ -29,13 +49,12 @@ def random_choice(a, size=None, replace=True, p=None, exclusion=None):
     return sample
 
 
+@typeassert(sparse_matrix_data=csr_matrix)
 def csr_to_user_dict(sparse_matrix_data):
     """convert a scipy.sparse.csr_matrix to a dict,
     where the key is row number, and value is the
     non-empty index in each row.
     """
-    if sparse_matrix_data is None:
-        raise ValueError("sparse_matrix_data is None")
     idx_value_dict = {}
     for idx, value in enumerate(sparse_matrix_data):
         if any(value.indices):
@@ -43,6 +62,7 @@ def csr_to_user_dict(sparse_matrix_data):
     return idx_value_dict
 
 
+@typeassert(sparse_matrix_data=csr_matrix)
 def csr_to_user_item_pair(sparse_matrix_data):
     users, items = [], []
     for user, u_items in enumerate(sparse_matrix_data):
