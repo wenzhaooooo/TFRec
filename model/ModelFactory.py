@@ -3,6 +3,7 @@ from model.DNSBPR import DNSBPR
 from model.Pop import Pop
 from model.IRGAN import IRGAN
 from model.APL import APL
+from model.APR import APR
 import configparser
 import os
 from utils import Logger
@@ -16,7 +17,8 @@ class ModelFactory(object):
                            "DNSBPR": DNSBPR,
                            "Pop": Pop,
                            "IRGAN": IRGAN,
-                           "APL": APL
+                           "APL": APL,
+                           "APR": APR
                            }
 
     def get_model(self):

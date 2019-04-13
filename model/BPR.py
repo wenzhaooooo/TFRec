@@ -1,5 +1,5 @@
 """
-Title: BPR: Bayesian Personalized Ranking from Implicit Feedback
+Paper: BPR: Bayesian Personalized Ranking from Implicit Feedback
 Author: Steffen Rendle, Christoph Freudenthaler, Zeno Gantner, and Lars Schmidt-Thieme
 """
 
@@ -33,7 +33,6 @@ class BPR(AbstractRecommender):
         self.sess = sess
         self.sess.run(tf.global_variables_initializer())
 
-    # TODO rename function name.
     def _build_model(self):
         self.user_h = tf.placeholder(tf.int32, name="user")
         self.pos_item_h = tf.placeholder(tf.int32, name="pos_item")

@@ -1,5 +1,5 @@
 """
-Title: IRGAN: A Minimax Game for Unifying Generative and Discriminative Information Retrieval Models
+Paper: IRGAN: A Minimax Game for Unifying Generative and Discriminative Information Retrieval Models
 Author: Jun Wang, Lantao Yu, Weinan Zhang, Yu Gong, Yinghui Xu, Benyou Wang, Peng Zhang, and Dell Zhang
 """
 
@@ -144,11 +144,11 @@ class IRGAN(AbstractRecommender):
 
         self.all_items = np.arange(self.items_num)
         self.evaluator = evaluator
-        self.build_model()
+        self._build_model()
         self.sess = sess
         self.sess.run(tf.global_variables_initializer())
 
-    def build_model(self):
+    def _build_model(self):
         with open(self.pretrain_file, "rb") as fin:
             pretrain_params = pickle.load(fin, encoding="latin")
         self.generator = GEN(self.items_num, self.users_num, self.factors_num, self.g_reg, param=pretrain_params,

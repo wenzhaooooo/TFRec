@@ -1,5 +1,5 @@
 """
-Title: APL: Adversarial Pairwise Learning for Recommender Systems
+Paper: APL: Adversarial Pairwise Learning for Recommender Systems
 Author: Zhongchuan Sun, Bin Wu, Yunpeng Wu and Yangdong Ye
 """
 
@@ -93,11 +93,11 @@ class APL(AbstractRecommender):
         self.all_items = np.arange(self.items_num)
         self.evaluator = evaluator
 
-        self.build_model()
+        self._build_model()
         self.sess = sess
         self.sess.run(tf.global_variables_initializer())
 
-    def build_model(self):
+    def _build_model(self):
         self.user_holder = tf.placeholder(tf.int32)
         self.item_holder = tf.placeholder(tf.int32)
         self.g_aux_holder = tf.placeholder(tf.float32)
