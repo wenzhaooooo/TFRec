@@ -1,8 +1,3 @@
-"""
-Title: BPR: Bayesian Personalized Ranking from Implicit Feedback
-Author: Steffen Rendle, Christoph Freudenthaler, Zeno Gantner, and Lars Schmidt-Thieme
-"""
-
 import numpy as np
 import tensorflow as tf
 from model.base import AbstractRecommender
@@ -11,17 +6,21 @@ from utils import random_choice
 from model.losses import log_loss
 from data import DataIterator
 from utils import csr_to_user_dict
+from concurrent.futures import ThreadPoolExecutor
+import pickle
 
 
-class BPR(AbstractRecommender):
+class DNSBPR(AbstractRecommender):
     def __init__(self, sess, config, dataset, evaluator):
-        super(BPR, self).__init__(sess, config, dataset, evaluator)
+        super(DNSBPR, self).__init__(sess, config, dataset, evaluator)
+        self.config = config
         train_matrix = dataset.train_matrix
         self.users_num, self.items_num = train_matrix.shape
 
         self.factors_num = config["factors_num"]
         self.lr = config["lr"]
         self.reg = config["reg"]
+        self.neg_num = config["neg_num"]
         self.epochs = config["epochs"]
         self.batch_size = config["batch_size"]
         self.user_pos_train = csr_to_user_dict(train_matrix)
@@ -33,7 +32,6 @@ class BPR(AbstractRecommender):
         self.sess = sess
         self.sess.run(tf.global_variables_initializer())
 
-    # TODO rename function name.
     def _build_model(self):
         self.user_h = tf.placeholder(tf.int32, name="user")
         self.pos_item_h = tf.placeholder(tf.int32, name="pos_item")
@@ -48,19 +46,38 @@ class BPR(AbstractRecommender):
         opt = tf.train.GradientDescentOptimizer(self.lr)
         self.update = opt.minimize(self.final_loss, name="update")
 
+        self.all_logits_tensor = self.mf.all_logits(self.user_h)
+
     def get_training_data(self):
-        users = []
-        pos_items = []
-        neg_items = []
-        for u, pos in self.user_pos_train.items():
-            pos_len = len(pos)
-            neg = random_choice(self.all_items, size=pos_len, exclusion=pos)
+        users_list = []
+        pos_items_list = []
+        neg_items_list = []
+        users = self.user_pos_train.keys()
+        with ThreadPoolExecutor() as executor:
+            batch_result = executor.map(self._get_neg_items, users)
+        for user, pos, neg in batch_result:
+            users_list.extend(user)
+            pos_items_list.extend(pos)
+            neg_items_list.extend(neg)
 
-            users.extend([u]*pos_len)
-            pos_items.extend(pos.tolist())
-            neg_items.extend(neg.tolist())
+        return DataIterator(users_list, pos_items_list, neg_items_list, batch_size=self.batch_size, shuffle=True)
 
-        return DataIterator(users, pos_items, neg_items, batch_size=self.batch_size, shuffle=True)
+    def _get_neg_items(self, user):
+        pos_item = self.user_pos_train[user]
+        pos_len = len(pos_item)
+        feed = {self.user_h: [user]}
+        logits = self.sess.run(self.all_logits_tensor, feed_dict=feed)
+        logits = np.reshape(logits, newshape=[-1])
+
+        neg_pool = random_choice(self.all_items, size=self.neg_num * pos_len, exclusion=pos_item)
+
+        neg_logits = logits[neg_pool]
+
+        neg_pool = np.reshape(neg_pool, newshape=[pos_len, self.neg_num])
+        neg_logits = np.reshape(neg_logits, newshape=[pos_len, self.neg_num])
+
+        neg_item = neg_pool[np.arange(pos_len), np.argmax(neg_logits, axis=1)]
+        return [user]*pos_len, pos_item, neg_item
 
     def train_model(self):
         self.logger.info(self.evaluator.metrics_info())
@@ -73,6 +90,7 @@ class BPR(AbstractRecommender):
                 self.sess.run(self.update, feed_dict=feed)
             result = self.evaluate_model()
             self.logger.info("epoch %d:\t%s" % (epoch, result))
+        self.save_model()
 
     def _predict(self):
         # return all ratings matrix
@@ -84,3 +102,9 @@ class BPR(AbstractRecommender):
         result = self.evaluator.evaluate(self)
         buf = '\t'.join([str(x) for x in result])
         return buf
+
+    def save_model(self):
+        params = self.sess.run(self.mf.parameters())
+        with open("%s_dnsbpr.pkl" % self.config["data_name"], "wb") as fout:
+            pickle.dump(params, fout)
+

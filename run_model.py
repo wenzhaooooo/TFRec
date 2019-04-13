@@ -15,7 +15,6 @@ if __name__ == "__main__":
     config.gpu_options.allow_growth = True
     sess = tf.Session(config=config)
     model_factory = ModelFactory()
-    # print("Available models: %s" % model_factory.available_model())
     Model, config = model_factory.get_model()
 
     dataset = Dataset(config)

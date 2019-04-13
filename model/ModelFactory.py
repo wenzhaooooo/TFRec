@@ -1,4 +1,8 @@
 from model.BPR import BPR
+from model.DNSBPR import DNSBPR
+from model.Pop import Pop
+from model.IRGAN import IRGAN
+from model.APL import APL
 import configparser
 import os
 from utils import Logger
@@ -8,7 +12,11 @@ import time
 
 class ModelFactory(object):
     def __init__(self):
-        self.model_dict = {BPR.__name__: BPR,
+        self.model_dict = {"BPR": BPR,
+                           "DNSBPR": DNSBPR,
+                           "Pop": Pop,
+                           "IRGAN": IRGAN,
+                           "APL": APL
                            }
 
     def get_model(self):
@@ -75,6 +83,3 @@ class ModelFactory(object):
             except:
                 config[key] = value
         return config
-
-    def available_model(self):
-        return list(self.model_dict.keys())
