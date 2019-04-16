@@ -4,6 +4,7 @@ from model.Pop import Pop
 from model.IRGAN import IRGAN
 from model.APL import APL
 from model.APR import APR
+from model.CFGAN import CFGAN
 import configparser
 import os
 from utils import Logger
@@ -18,7 +19,8 @@ class ModelFactory(object):
                            "Pop": Pop,
                            "IRGAN": IRGAN,
                            "APL": APL,
-                           "APR": APR
+                           "APR": APR,
+                           "CFGAN": CFGAN
                            }
 
     def get_model(self):
